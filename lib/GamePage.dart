@@ -14,7 +14,22 @@ class GamePage extends StatelessWidget {
   }
 }
 
-class _Page extends StatelessWidget {
+class _Page extends StatefulWidget {
+  @override
+  __PageState createState() => __PageState();
+}
+
+class __PageState extends State<_Page> {
+  static __PageState instance;
+
+  __PageState() {
+    instance = this;
+  }
+
+  static void updateState() {
+    instance.setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     EdgeInsets padding = MediaQuery.of(context).padding;
@@ -136,76 +151,9 @@ void clickBox(int row, int column, int number) {
   if (row != 0 && column != 0) {
     currentRow = row;
     currentColumn = column;
-    print('$row-$column-$number');
+    __PageState.updateState();
   }
 }
-
-//String name = '123';
-//
-//class testWidget extends StatefulWidget {
-//  testWidget({Key key, this.abc}) : super(key: key);
-//
-//  String abc;
-//
-//  @override
-//  _testState createState() => new _testState();
-//}
-//
-//class _testState extends State<testWidget> {
-//  @override
-//  Widget build(BuildContext context) {
-//    EdgeInsets padding = MediaQuery.of(context).padding;
-//    double top = math.max(padding.top, EdgeInsets.zero.top);
-//
-//    return Padding(
-//      padding: EdgeInsets.only(top: top),
-//      child: Column(
-//        children: <Widget>[
-//          Container(
-//            alignment: Alignment.centerLeft,
-//            color: Colors.black12,
-//            height: 44,
-//            child: IconButton(
-//              icon: Image.asset(
-//                'assets/arrow_left.png',
-//                width: 20,
-//                height: 20,
-//              ),
-//              iconSize: 10,
-//              onPressed: () {
-//                Navigator.pop(context);
-//              },
-//            ),
-//          ),
-//          AspectRatio(
-//            aspectRatio: 1,
-//            child: Container(
-//              color: Colors.black26,
-//              alignment: Alignment.topLeft,
-//              child: RaisedButton(
-//                child: Text(name),
-//                onPressed: () {
-//                  print('123');
-//
-//                  for (int i = 1; i <= 9; i++)
-//                    for (int j = 1; j <= 9; j++) {
-//                      NumberBox box = table.all[i][j];
-//                      print(
-//                          '${box.boxRow}-${box.boxColumn}-${box.expect.length}');
-//                    }
-//
-//                  setState(() {
-//                    name = 'bbbbb';
-//                  });
-//                },
-//              ),
-//            ),
-//          )
-//        ],
-//      ),
-//    );
-//  }
-//}
 
 class TableModel {
   List all = List(10);
