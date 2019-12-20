@@ -79,16 +79,31 @@ class __PageState extends State<_Page> {
             alignment: Alignment.centerLeft,
             color: Colors.black12,
             height: 44,
-            child: IconButton(
-              icon: Image.asset(
-                'assets/arrow_left.png',
-                width: 20,
-                height: 20,
-              ),
-              iconSize: 10,
-              onPressed: () {
-                Navigator.pop(context);
-              },
+            child: Row(
+              children: <Widget>[
+                IconButton(
+                  icon: Image.asset(
+                    'assets/arrow_left.png',
+                    width: 20,
+                    height: 20,
+                  ),
+                  iconSize: 10,
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                Padding(
+                  padding: EdgeInsets.only(left: 20),
+                  child: GestureDetector(
+                    child: Icon(
+                      Icons.help,
+                    ),
+                    onTap: () {
+                      help();
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
           AspectRatio(
@@ -119,6 +134,38 @@ class __PageState extends State<_Page> {
         ],
       ),
     );
+  }
+
+  void help() {
+    int i, j;
+    for (i = 1; i <= 9; i++)
+      for (j = 1; j <= 9; j++) {
+        NumberBoxModel boxData = table.all[i][j];
+        if (!boxData.ensure && boxData.expect.length == 1) {
+          table.changeValue(i, j, boxData.expect[0]);
+          break;
+        }
+      }
+    if (i == 10 && j == 10) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            content: Text('暂时没有找到可以自动填充的格子'),
+            actions: <Widget>[
+              FlatButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('确定'),
+              )
+            ],
+          );
+        },
+      );
+    } else {
+      updateState();
+    }
   }
 }
 
