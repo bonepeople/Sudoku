@@ -39,11 +39,11 @@ class __PageState extends State<_Page> {
     for (int i = 1; i <= 9; i++) {
       for (int j = 1; j <= 9; j++) {
         NumberBoxModel boxData = table.all[i][j];
-        if (boxData.expect.length == 1)
+        if (boxData.ensure)
           blocks.add(NumberBoxView(
             i,
             j,
-            number: boxData.expect[0],
+            number: boxData.value,
           ));
         else
           blocks.add(NumberBoxView(i, j));
@@ -52,7 +52,7 @@ class __PageState extends State<_Page> {
     var select = <Widget>[];
     if (currentRow > 0 && currentColumn > 0) {
       NumberBoxModel boxData = table.all[currentRow][currentColumn];
-      if (boxData.expect.length != 1) {
+      if (!boxData.ensure) {
         for (int number in boxData.expect) {
           select.add(NumberBoxView(
             0,
@@ -151,8 +151,10 @@ void clickBox(int row, int column, int number) {
   if (row != 0 && column != 0) {
     currentRow = row;
     currentColumn = column;
-    __PageState.updateState();
+  } else {
+    table.changeValue(currentRow, currentColumn, number);
   }
+  __PageState.updateState();
 }
 
 class TableModel {
@@ -167,12 +169,69 @@ class TableModel {
       }
     }
   }
+
+  changeValue(int row, int column, number) {
+    if (number < 1 || number > 9) return;
+    NumberBoxModel boxData;
+    //当前格子
+    boxData = all[row][column];
+    boxData.ensure = true;
+    boxData.value = number;
+    //行、列
+    for (int i = 1; i <= 9; i++) {
+      boxData = all[row][i];
+      boxData.calculateExpect();
+
+      boxData = all[i][column];
+      boxData.calculateExpect();
+    }
+    //块
+    int startRow = row - (row % 3 == 0 ? 3 : row % 3) + 1;
+    int endRow = startRow + 2;
+    int startColumn = column - (column % 3 == 0 ? 3 : column % 3) + 1;
+    int endColumn = startColumn + 2;
+    for (int i = startRow; i <= endRow; i++)
+      for (int j = startColumn; j <= endColumn; j++) {
+        boxData = table.all[i][j];
+        boxData.calculateExpect();
+      }
+  }
 }
 
 class NumberBoxModel {
   int boxRow;
   int boxColumn;
+  bool ensure = false;
+  int value;
   List expect = <int>[1, 2, 3, 4, 5, 6, 7, 8, 9];
 
   NumberBoxModel(this.boxRow, this.boxColumn);
+
+  calculateExpect() {
+    Set numbers = Set();
+    NumberBoxModel boxData;
+    //行、列
+    for (int i = 1; i <= 9; i++) {
+      boxData = table.all[boxRow][i];
+      if (i != boxColumn && boxData.ensure) numbers.add(boxData.value);
+
+      boxData = table.all[i][boxColumn];
+      if (i != boxRow && boxData.ensure) numbers.add(boxData.value);
+    }
+    //块
+    int startRow = boxRow - (boxRow % 3 == 0 ? 3 : boxRow % 3) + 1;
+    int endRow = startRow + 2;
+    int startColumn = boxColumn - (boxColumn % 3 == 0 ? 3 : boxColumn % 3) + 1;
+    int endColumn = startColumn + 2;
+    for (int i = startRow; i <= endRow; i++)
+      for (int j = startColumn; j <= endColumn; j++) {
+        boxData = table.all[i][j];
+        if (i != boxRow && j != boxColumn && boxData.ensure)
+          numbers.add(boxData.value);
+      }
+    expect.clear();
+    for (int i = 1; i <= 9; i++) {
+      if (!numbers.contains(i)) expect.add(i);
+    }
+  }
 }
