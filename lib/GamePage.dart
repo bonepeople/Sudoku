@@ -65,7 +65,7 @@ class __PageState extends State<_Page> {
           select.add(NumberBoxView(
             0,
             0,
-            number: number,
+            number: number == boxData.value ? 0 : number,
           ));
         }
       }
@@ -187,6 +187,13 @@ class NumberBoxView extends StatelessWidget {
         textColor = Colors.red;
       }
     }
+    String text;
+    if (number == null)
+      text = '';
+    else if (number == 0)
+      text = '?';
+    else
+      text = number.toString();
 
     return GestureDetector(
       child: Container(
@@ -197,7 +204,7 @@ class NumberBoxView extends StatelessWidget {
                 : Colors.white),
         alignment: Alignment.center,
         child: Text(
-          '${number == null ? '' : '$number'}',
+          text,
           style: TextStyle(color: textColor),
         ),
       ),
@@ -230,11 +237,11 @@ class TableModel {
   }
 
   changeValue(int row, int column, number) {
-    if (number < 1 || number > 9) return;
+    if (number < 0 || number > 9) return;
     NumberBoxModel boxData;
     //当前格子
     boxData = all[row][column];
-    boxData.ensure = true;
+    boxData.ensure = number != 0;
     boxData.value = number;
     //行、列
     for (int i = 1; i <= 9; i++) {
