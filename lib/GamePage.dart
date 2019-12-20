@@ -129,6 +129,18 @@ class NumberBoxView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Color textColor;
+    if (row == 0 || column == 0)
+      textColor = Colors.black;
+    else {
+      NumberBoxModel data = table.all[row][column];
+      if (data.expect.contains(data.value)) {
+        textColor = Colors.black;
+      } else {
+        textColor = Colors.red;
+      }
+    }
+
     return GestureDetector(
       child: Container(
         decoration: BoxDecoration(
@@ -139,7 +151,7 @@ class NumberBoxView extends StatelessWidget {
         alignment: Alignment.center,
         child: Text(
           '${number == null ? '' : '$number'}',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: textColor),
         ),
       ),
       onTap: () => clickBox(row, column, number),
