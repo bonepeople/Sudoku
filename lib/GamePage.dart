@@ -180,6 +180,15 @@ class NumberBoxView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    BorderDirectional border = BorderDirectional(
+      top: BorderSide(color: row % 3 == 1 ? Colors.black : Colors.grey),
+      bottom: BorderSide(
+          color: row % 3 == 0 && row != 0 ? Colors.black : Colors.grey),
+      start: BorderSide(color: column % 3 == 1 ? Colors.black : Colors.grey),
+      end: BorderSide(
+          color: column % 3 == 0 && column != 0 ? Colors.black : Colors.grey),
+    );
+
     Color textColor;
     if (row == 0 || column == 0)
       textColor = Colors.black;
@@ -202,7 +211,7 @@ class NumberBoxView extends StatelessWidget {
     return GestureDetector(
       child: Container(
         decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
+            border: border,
             color: row == currentRow || column == currentColumn
                 ? Colors.black12
                 : Colors.white),
