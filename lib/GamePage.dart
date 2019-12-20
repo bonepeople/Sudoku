@@ -138,7 +138,7 @@ class __PageState extends State<_Page> {
 
   void help() {
     int i, j;
-    for (i = 1; i <= 9; i++)
+    for (i = 1; i <= 9; i++) {
       for (j = 1; j <= 9; j++) {
         NumberBoxModel boxData = table.all[i][j];
         if (!boxData.ensure && boxData.expect.length == 1) {
@@ -146,6 +146,8 @@ class __PageState extends State<_Page> {
           break;
         }
       }
+      if (j != 10) break;
+    }
     if (i == 10 && j == 10) {
       showDialog(
         context: context,
@@ -164,6 +166,8 @@ class __PageState extends State<_Page> {
         },
       );
     } else {
+      currentRow = i;
+      currentColumn = j;
       updateState();
     }
   }
