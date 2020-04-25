@@ -35,6 +35,7 @@ class __PageState extends State<_Page> {
     EdgeInsets padding = MediaQuery.of(context).padding;
     double top = math.max(padding.top, EdgeInsets.zero.top);
 
+    //创建游戏区域的81个格子控件
     var blocks = <Widget>[];
     for (int i = 1; i <= 9; i++) {
       for (int j = 1; j <= 9; j++) {
@@ -49,6 +50,7 @@ class __PageState extends State<_Page> {
           blocks.add(NumberBoxView(i, j));
       }
     }
+    //创建候选区域的控件
     var select = <Widget>[];
     if (currentRow > 0 && currentColumn > 0) {
       NumberBoxModel boxData = table.all[currentRow][currentColumn];
@@ -75,6 +77,7 @@ class __PageState extends State<_Page> {
       padding: EdgeInsets.only(top: top),
       child: Column(
         children: <Widget>[
+          //标题栏
           Container(
             alignment: Alignment.centerLeft,
             color: Colors.black12,
@@ -106,6 +109,7 @@ class __PageState extends State<_Page> {
               ],
             ),
           ),
+          //游戏区域
           AspectRatio(
             aspectRatio: 1,
             child: Container(
@@ -119,6 +123,7 @@ class __PageState extends State<_Page> {
               ),
             ),
           ),
+          //候选区域
           Padding(
               padding: EdgeInsets.only(top: 20, left: 20, right: 20),
               child: AspectRatio(
@@ -136,19 +141,78 @@ class __PageState extends State<_Page> {
     );
   }
 
+  //帮助功能，自动填充表格
   void help() {
-    int i, j;
-    for (i = 1; i <= 9; i++) {
-      for (j = 1; j <= 9; j++) {
+    bool changed = false;
+    //遍历81个格子，查找唯一数字
+    for (int i = 1; i <= 9; i++) {
+      for (int j = 1; j <= 9; j++) {
         NumberBoxModel boxData = table.all[i][j];
+        //当前格子未被用户选择且备选数字只有一个则将其设置为备选数字
         if (!boxData.ensure && boxData.expect.length == 1) {
           table.changeValue(i, j, boxData.expect[0]);
+          currentRow = i;
+          currentColumn = j;
+          changed = true;
+          print("bone row = $i column = $j x = ${boxData.expect[0]}");
           break;
         }
       }
-      if (j != 10) break;
+      if (changed) break;
     }
-    if (i == 10 && j == 10) {
+    //逐行排查唯一候选项
+    if (!changed) {
+      List<NumberBoxModel> list = List();
+      for (int i = 1; i <= 9 && !changed; i++) {
+        //将第i行格子放入列表中
+        for (int j = 1; j <= 9; j++) {
+          list.add(table.all[i][j]);
+        }
+        //查找第i行的唯一数字
+        print("bone 查找第$i行");
+        changed = findSingleNumber(list);
+        list.clear();
+      }
+    }
+    //逐列排查唯一候选项
+    if (!changed) {
+      List<NumberBoxModel> list = List();
+      for (int i = 1; i <= 9 && !changed; i++) {
+        //将第i列格子放入列表中
+        for (int j = 1; j <= 9; j++) {
+          list.add(table.all[j][i]);
+        }
+        //查找第i列的唯一数字
+        print("bone 查找第$i列");
+        changed = findSingleNumber(list);
+        list.clear();
+      }
+    }
+    //逐块排查唯一候选项
+    if (!changed) {
+      List<NumberBoxModel> list = List();
+      for (int i = 1; i <= 9 && !changed; i++) {
+        int startRow = ((i - 1) / 3).floor() * 3 + 1;
+        int endRow = startRow + 2;
+        int startColumn = (i % 3) * (i % 3);
+        if (startColumn == 0) startColumn = 7;
+        int endColumn = startColumn + 2;
+        //将第i块的格子放入列表中
+        for (int row = startRow; row <= endRow; row++) {
+          for (int column = startColumn; column <= endColumn; column++) {
+            list.add(table.all[row][column]);
+          }
+        }
+        //查找第i列的唯一数字
+        print("bone 查找第$i块");
+        changed = findSingleNumber(list);
+        list.clear();
+      }
+    }
+    //找到之后更新页面，否则显示对话框进行提示
+    if (changed) {
+      updateState();
+    } else {
       showDialog(
         context: context,
         builder: (context) {
@@ -165,14 +229,39 @@ class __PageState extends State<_Page> {
           );
         },
       );
-    } else {
-      currentRow = i;
-      currentColumn = j;
-      updateState();
     }
+  }
+
+  //在给定数组中查找唯一数字，若找到则将更新数据并返回true，未找到则返回false
+  //所有未选择的格子都有多个候选项，但如果某一个候选项只出现过一次，则表明此格子一定是这个候选项
+  bool findSingleNumber(List<NumberBoxModel> list) {
+    //从候选数字1-9依次查找
+    for (int x = 1; x <= 9; x++) {
+      int i = 0, j = 0, count = 0;
+      for (NumberBoxModel box in list) {
+        //若目标格子的期望值中包含所查找的数字，则记录位置并且计数器自增
+        if (!box.ensure && box.expect.contains(x)) {
+          i = box.boxRow;
+          j = box.boxColumn;
+          count++;
+          //计数器自增至2的时候中断循环
+          if (count > 1) break;
+        }
+      }
+      //当格子遍历完成后计数器为1，则表明当前记录的格子数字可以确定为查找的数字，返回true
+      if (count == 1) {
+        table.changeValue(i, j, x);
+        currentRow = i;
+        currentColumn = j;
+        print("bone row = $i column = $j x = $x");
+        return true;
+      }
+    }
+    return false;
   }
 }
 
+//数字框所对应的控件
 class NumberBoxView extends StatelessWidget {
   final int row, column, number;
 
@@ -226,6 +315,7 @@ class NumberBoxView extends StatelessWidget {
   }
 }
 
+//数字框控件的点击事件函数
 void clickBox(int row, int column, int number) {
   if (row != 0 && column != 0) {
     currentRow = row;
@@ -236,8 +326,9 @@ void clickBox(int row, int column, int number) {
   __PageState.updateState();
 }
 
+//页面的数据模型，主要负责维护页面内的数据
 class TableModel {
-  List all = List(10);
+  List<List<NumberBoxModel>> all = List(10);
 
   TableModel() {
     for (int rowIndex = 1; rowIndex <= 9; rowIndex++) {
@@ -249,6 +340,7 @@ class TableModel {
     }
   }
 
+  //更新指定位置的数字并更新所影响格子的数据
   changeValue(int row, int column, number) {
     if (number < 0 || number > 9) return;
     NumberBoxModel boxData;
@@ -277,6 +369,7 @@ class TableModel {
   }
 }
 
+//数据框所对应的数据模型
 class NumberBoxModel {
   int boxRow;
   int boxColumn;
@@ -286,6 +379,7 @@ class NumberBoxModel {
 
   NumberBoxModel(this.boxRow, this.boxColumn);
 
+  //计算当前位置可能出现的数字
   calculateExpect() {
     Set numbers = Set();
     NumberBoxModel boxData;
